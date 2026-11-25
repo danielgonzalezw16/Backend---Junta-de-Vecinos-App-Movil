@@ -1,0 +1,70 @@
+server:
+  port: 9090
+
+spring:
+  main:
+    web-application-type: reactive
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: ${SECRET:junta_zaror_clave_jwt_demo_2026_cambiar_en_produccion}
+
+  cloud:
+    gateway:
+      routes:
+
+        # ms-admin: autenticación (pública) y perfil de usuario
+        - id: ms-admin-auth
+          uri: http://ms-admin:9090
+          predicates:
+            - Path=/auth/**, /usuarios/**
+
+        # ms-reservas: reservas y dependencias
+        - id: ms-reservas
+          uri: http://ms-reservas:9090
+          predicates:
+            - Path=/reservas/**, /dependencias/**
+
+        # ms-notificaciones: avisos del usuario (/internal/** NO se expone por el gateway)
+        - id: ms-notificaciones
+          uri: http://ms-notificaciones:9090
+          predicates:
+            - Path=/notificaciones/**
+
+        # ms-finanzas: movimientos (ingresos / gastos / pagos)
+        - id: ms-finanzas
+          uri: http://ms-finanzas:9090
+          predicates:
+            - Path=/movimientos/**
+        # Alias directos por microservicio para facilitar las pruebas en Postman.
+        # StripPrefix=1 elimina /ms-... antes de reenviar la solicitud.
+        - id: ms-admin-prefijo
+          uri: http://ms-admin:9090
+          predicates:
+            - Path=/ms-admin/**
+          filters:
+            - StripPrefix=1
+
+        - id: ms-reservas-prefijo
+          uri: http://ms-reservas:9090
+          predicates:
+            - Path=/ms-reservas/**
+          filters:
+            - StripPrefix=1
+
+        - id: ms-notificaciones-prefijo
+          uri: http://ms-notificaciones:9090
+          predicates:
+            - Path=/ms-notificaciones/**
+          filters:
+            - StripPrefix=1
+
+        - id: ms-finanzas-prefijo
+          uri: http://ms-finanzas:9090
+          predicates:
+            - Path=/ms-finanzas/**
+          filters:
+            - StripPrefix=1
+
